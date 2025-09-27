@@ -10,8 +10,6 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
 public class MenuItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,14 +22,11 @@ public class MenuItem {
     private String category;
     private boolean available = true;
 
-
-
     public MenuItem(String name, String description, BigDecimal price, String category) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.category = category;
         this.available = true;
-
     }
 }

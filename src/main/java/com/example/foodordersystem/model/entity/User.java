@@ -16,8 +16,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Getter
-@Setter
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,9 +28,9 @@ public class User implements UserDetails {
     private String password;
 
     @Enumerated(EnumType.STRING)
-
     private Role role;
 
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum Role {

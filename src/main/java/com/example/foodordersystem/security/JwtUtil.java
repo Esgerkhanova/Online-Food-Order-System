@@ -1,5 +1,6 @@
 package com.example.foodordersystem.security;
 
+import ch.qos.logback.classic.Logger;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +11,7 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -20,6 +22,8 @@ public class JwtUtil {
 
     @Value("${jwt.expiration}")
     private Long expiration;
+
+    private static final Logger log = (Logger) org.slf4j.LoggerFactory.getLogger(JwtUtil.class);
 
     private SecretKey getSigningKey() {
         // Secret key-in düzgün base64 formatda olduğuna əmin olun
@@ -96,6 +100,61 @@ public class JwtUtil {
                     .before(new Date());
         } catch (Exception e) {
             return true;
+        }
+    }
+    public Claims extractAllClaims(String token) {
+        String cleanToken = token.trim();
+        if (cleanToken.contains(" ")) {
+            cleanToken = cleanToken.substring(cleanToken.lastIndexOf(" ") + 1);
+        }
+
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(cleanToken)
+                .getBody();
+    }
+
+    public String extractRole(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            @SuppressWarnings("unchecked")
+            List<Map<String, String>> authorities =
+                    (List<Map<String, String>>) claims.get("role");
+
+            if (authorities != null && !authorities.isEmpty()) {
+                return authorities.get(0).get("authority");
+            }
+            return null;
+        } catch (Exception e) {
+            log.error("Error extracting role from token: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public Date extractExpiration(String token) {
+        return extractAllClaims(token).getExpiration();
+    }
+
+    public Date extractIssuedAt(String token) {
+        return extractAllClaims(token).getIssuedAt();
+    }
+
+    public String refreshToken(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            String username = claims.getSubject();
+
+            // Create new token with fresh expiration
+            return Jwts.builder()
+                    .setClaims(claims)
+                    .setSubject(username)
+                    .setIssuedAt(new Date())
+                    .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                    .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                    .compact();
+        } catch (Exception e) {
+            throw new RuntimeException("Token refresh failed: " + e.getMessage());
         }
     }
 }

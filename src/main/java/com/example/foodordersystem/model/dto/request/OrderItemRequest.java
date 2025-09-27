@@ -1,23 +1,36 @@
 package com.example.foodordersystem.model.dto.request;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
-import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 @Builder
+@Schema(description = "Sifariş maddəsi məlumatları")
 public class OrderItemRequest {
-    @NotNull(message = "Menu item ID is required")
+
+    @NotNull(message = "Menyu maddəsi ID-si boş ola bilməz")
+    @Positive(message = "Menyu maddəsi ID-si müsbət rəqəm olmalıdır")
+    @Schema(description = "Menyu maddəsinin ID-si", example = "1", required = true)
     private Long menuItemId;
 
-    @NotNull(message = "Quantity is required")
-    @Min(value = 1, message = "Quantity must be at least 1")
+    @NotNull(message = "Miqdar boş ola bilməz")
+    @Min(value = 1, message = "Miqdar ən azı 1 olmalıdır")
+    @Max(value = 50, message = "Miqdar maksimum 50 ola bilər")
+    @Schema(description = "Sifariş ediləcək miqdar", example = "2", required = true)
     private Integer quantity;
 
+    @Size(max = 100, message = "Xüsusi qeyd 100 simvoldan çox ola bilməz")
+    @Schema(description = "Bu maddə üçün xüsusi qeydlər", example = "Az duzlu olsun")
+    private String specialInstructions;
+
+    @AssertTrue(message = "Miqdar və menyu ID-si müsbət olmalıdır")
+    public boolean isValidOrderItem() {
+        return menuItemId != null && menuItemId > 0 &&
+                quantity != null && quantity > 0;
+    }
 }
+

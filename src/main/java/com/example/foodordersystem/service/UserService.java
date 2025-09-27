@@ -3,6 +3,7 @@ package com.example.foodordersystem.service;
 import com.example.foodordersystem.model.dto.request.RegisterRequest;
 import com.example.foodordersystem.model.entity.User;
 import com.example.foodordersystem.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,12 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-
 @Transactional
 public class UserService implements UserDetailsService {
-
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+   private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -24,18 +23,30 @@ public class UserService implements UserDetailsService {
     }
 
     public User registerUser(RegisterRequest request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("Parollar uyğun gəlmir");
+        }
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists.Please choose a different username.");
+            throw new RuntimeException("Username artıq mövcuddur");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new RuntimeException("Email artıq mövcuddur");
         }
+
+
+        User.Role role;
+        try {
+            role = User.Role.valueOf(request.getRole().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Rol yalnız CUSTOMER, STAFF və ya ADMIN ola bilər");
+        }
+
 
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(User.Role.valueOf(request.getRole().toUpperCase()));
+        user.setRole(role);
 
         return userRepository.save(user);
     }
