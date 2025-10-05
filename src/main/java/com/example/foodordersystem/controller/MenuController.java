@@ -1,7 +1,7 @@
 package com.example.foodordersystem.controller;
 
 import com.example.foodordersystem.model.entity.MenuItem;
-import com.example.foodordersystem.service.MenuService;
+import com.example.foodordersystem.service.MenuServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,9 +22,9 @@ import java.math.BigDecimal;
 @CrossOrigin(origins = "*")
 public class MenuController {
 
-    private final MenuService menuService;
+    private final MenuServiceImpl menuService;
 
-    public MenuController(MenuService menuService) {
+    public MenuController(MenuServiceImpl menuService) {
         this.menuService = menuService;
     }
 

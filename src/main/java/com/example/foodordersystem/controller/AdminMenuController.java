@@ -1,9 +1,10 @@
 package com.example.foodordersystem.controller;
 
+import com.example.foodordersystem.model.dto.MenuItemDTO;
 import com.example.foodordersystem.model.dto.request.MenuItemRequest;
 import com.example.foodordersystem.model.dto.response.ErrorResponse;
 import com.example.foodordersystem.model.entity.MenuItem;
-import com.example.foodordersystem.service.AdminMenuService;
+import com.example.foodordersystem.service.AdminMenuServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,9 +35,9 @@ import java.util.List;
 @SecurityRequirement(name = "Bearer Authentication")
 public class AdminMenuController {
 
-    private final AdminMenuService adminMenuService;
+    private final AdminMenuServiceImpl adminMenuService;
 
-    public AdminMenuController(AdminMenuService adminMenuService) {
+    public AdminMenuController(AdminMenuServiceImpl adminMenuService) {
         this.adminMenuService = adminMenuService;
     }
 
@@ -55,11 +56,11 @@ public class AdminMenuController {
             @ApiResponse(responseCode = "403", description = "Bu əməliyyat üçün icazəniz yoxdur"),
             @ApiResponse(responseCode = "409", description = "Bu adda menyu maddəsi artıq mövcuddur")
     })
-    public ResponseEntity<MenuItem> createMenuItem(
+    public ResponseEntity<MenuItemDTO> createMenuItem(
             @Valid @RequestBody @Parameter(description = "Menyu maddəsi məlumatları") MenuItemRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
 
-        MenuItem createdItem = adminMenuService.createMenuItem(request, userDetails.getUsername());
+        MenuItemDTO createdItem = adminMenuService.createMenuItem(request, userDetails.getUsername());
         return new ResponseEntity<>(createdItem, HttpStatus.CREATED);
     }
 
@@ -163,7 +164,6 @@ public class AdminMenuController {
         return ResponseEntity.ok(updatedItems);
     }
 
-    // Bulk update üçün helper DTO
     @Data
     public static class BulkAvailabilityRequest {
         private Long id;

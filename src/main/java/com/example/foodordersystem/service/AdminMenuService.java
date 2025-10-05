@@ -1,92 +1,30 @@
 package com.example.foodordersystem.service;
 
+import com.example.foodordersystem.model.dto.MenuItemDTO;
 import com.example.foodordersystem.model.dto.request.MenuItemRequest;
 import com.example.foodordersystem.model.entity.MenuItem;
-import com.example.foodordersystem.repository.MenuItemRepository;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
+import jakarta.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
-@Service
-public class AdminMenuService {
 
-    private final MenuItemRepository menuItemRepository;
+public interface AdminMenuService {
 
-    public AdminMenuService(MenuItemRepository menuItemRepository) {
-        this.menuItemRepository = menuItemRepository;
-    }
+    MenuItemDTO createMenuItem(@Valid MenuItemRequest request, String username);
 
-    public MenuItem createMenuItem(@Valid MenuItemRequest request, String username) {
-        // Burada request → entity mapping edilməlidir
-        MenuItem menuItem = new MenuItem();
-        menuItem.setName(request.getName());
-        menuItem.setPrice(request.getPrice());
-        menuItem.setCategory(request.getCategory());
-        menuItem.setAvailable(true);
-        return menuItemRepository.save(menuItem);
-    }
+    MenuItem updateMenuItem(Long id, @Valid MenuItemRequest request, String username);
 
-    public MenuItem updateMenuItem(Long id, @Valid MenuItemRequest request, String username) {
-        MenuItem menuItem = menuItemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Menu item not found"));
-        menuItem.setName(request.getName());
-        menuItem.setPrice(request.getPrice());
-        menuItem.setCategory(request.getCategory());
-        return menuItemRepository.save(menuItem);
-    }
+    void deleteMenuItem(Long id, String username);
 
-    public void deleteMenuItem(Long id, String username) {
-        if (!menuItemRepository.existsById(id)) {
-            throw new RuntimeException("Menu item not found");
-        }
-        menuItemRepository.deleteById(id);
-    }
+    MenuItem toggleAvailability(Long id, boolean available, String username);
 
-    public MenuItem toggleAvailability(Long id, boolean available, String username) {
-        MenuItem menuItem = menuItemRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Menu item not found"));
-        menuItem.setAvailable(available);
-        return menuItemRepository.save(menuItem);
-    }
+    Page<MenuItem> getAllMenuItemsForAdmin(Pageable pageable, String category, Boolean available, String username);
 
-    public Page<MenuItem> getAllMenuItemsForAdmin(Pageable pageable, String category, Boolean available, String username) {
-        if (category != null && available != null) {
-            return menuItemRepository.findByCategoryAndAvailable(category, available, pageable);
-        } else if (category != null) {
-            @SuppressWarnings("unchecked")
-            Page<MenuItem> result = (Page<MenuItem>) menuItemRepository.findByCategory(category, pageable);
-            return result;
-        } else if (available != null) {
-            @SuppressWarnings("unchecked")
-            Page<MenuItem> result = (Page<MenuItem>) menuItemRepository.findByAvailable(available, pageable);
-            return result;
-        }
-        return menuItemRepository.findAll(pageable);
-    }
+    List<String> getAllCategories();
 
-    public List<String> getAllCategories() {
-        List<MenuItem> allItems = menuItemRepository.findAll();
-        return allItems.stream()
-                .map(MenuItem::getCategory)
-                .distinct()
-                .collect(Collectors.toList());
-    }
-
-    public List<MenuItem> bulkUpdateAvailability(List<com.example.foodordersystem.controller.AdminMenuController.BulkAvailabilityRequest> requests,
-                                                 String username) {
-        List<Long> ids = requests.stream().map(r -> r.getId()).toList();
-        List<MenuItem> items = menuItemRepository.findAllById(ids);
-
-        items.forEach(item -> {
-            requests.stream()
-                    .filter(r -> r.getId().equals(item.getId()))
-                    .findFirst()
-                    .ifPresent(r -> item.setAvailable(r.isAvailable()));
-        });
-
-        return menuItemRepository.saveAll(items);
-    }
+    List<MenuItem> bulkUpdateAvailability(
+            List<com.example.foodordersystem.controller.AdminMenuController.BulkAvailabilityRequest> requests,
+            String username
+    );
 }

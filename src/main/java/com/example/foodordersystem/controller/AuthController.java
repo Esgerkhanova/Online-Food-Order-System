@@ -5,7 +5,7 @@ import com.example.foodordersystem.model.dto.request.RegisterRequest;
 import com.example.foodordersystem.model.dto.response.AuthResponse;
 import com.example.foodordersystem.model.entity.User;
 import com.example.foodordersystem.security.JwtUtil;
-import com.example.foodordersystem.service.UserService;
+import com.example.foodordersystem.service.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -27,11 +27,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final UserService userService;
+    private final UserServiceImpl userService;
     private final JwtUtil jwtUtil;
 
     public AuthController(AuthenticationManager authenticationManager,
-                          UserService userService, JwtUtil jwtUtil) {
+                          UserServiceImpl userService, JwtUtil jwtUtil) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.jwtUtil = jwtUtil;

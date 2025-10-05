@@ -8,8 +8,6 @@ import lombok.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
 @Schema(description = "İstifadəçi giriş məlumatları")
 public class AuthRequest {
     @NotBlank(message = "İstifadəçi adı boş ola bilməz")
